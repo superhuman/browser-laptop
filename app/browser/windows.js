@@ -22,11 +22,6 @@ const pinnedSitesUtil = require('../common/lib/pinnedSitesUtil')
 // TODO(bridiver) - set window uuid
 let currentWindows = {}
 
-const cleanupWindow = (windowId) => {
-  delete currentWindows[windowId]
-  appActions.windowClosed({ windowId })
-}
-
 const getWindowState = (win) => {
   if (win.isFullScreen()) {
     return 'fullscreen'
@@ -128,6 +123,7 @@ const api = {
         win.webContents.once('close', () => {
           LocalShortcuts.unregister(win)
         })
+
         win.once('close', () => {
           LocalShortcuts.unregister(win)
         })
@@ -191,7 +187,6 @@ const api = {
         appActions.windowCreated(windowValue)
       })
       win.once('closed', () => {
-        cleanupWindow(windowId)
       })
       win.on('blur', () => {
         appActions.windowBlurred(windowId)
@@ -323,7 +318,7 @@ const api = {
     })
   },
 
-  closeWindow: (state, windowId) => {
+  closeWindow: (windowId) => {
     let win = api.getWindow(windowId)
     try {
       setImmediate(() => {
@@ -334,7 +329,6 @@ const api = {
     } catch (e) {
       // ignore
     }
-    return windowState.removeWindowByWindowId(state, windowId)
   },
 
   getWindow: (windowId) => {
@@ -345,8 +339,11 @@ const api = {
     if (BrowserWindow.getFocusedWindow()) {
       return BrowserWindow.getFocusedWindow().id
     }
-
     return windowState.WINDOW_ID_NONE
+  },
+
+  cleanupWindow: (windowId) => {
+    delete currentWindows[windowId]
   }
 }
 

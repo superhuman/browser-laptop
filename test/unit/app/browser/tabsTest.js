@@ -352,11 +352,6 @@ describe('tabs API unit tests', function () {
     })
   })
 
-  describe.skip('executeScriptInBackground', function () {
-    it('todo', function () {
-    })
-  })
-
   describe.skip('createTab', function () {
     it('todo', function () {
     })

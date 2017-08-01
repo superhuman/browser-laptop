@@ -5,10 +5,9 @@
 const appActions = require('../../js/actions/appActions')
 const windowActions = require('../../js/actions/windowActions')
 const tabActions = require('../common/actions/tabActions')
-const config = require('../../js/constants/config')
 const Immutable = require('immutable')
 const tabState = require('../common/state/tabState')
-const {app, BrowserWindow, extensions, session, ipcMain} = require('electron')
+const {app, extensions, session, ipcMain} = require('electron')
 const {makeImmutable} = require('../common/state/immutableUtil')
 const {getTargetAboutUrl, getSourceAboutUrl, isSourceAboutUrl, newFrameUrl, isTargetAboutUrl, isIntermediateAboutPage, isTargetMagnetUrl, getSourceMagnetUrl} = require('../../js/lib/appUrlUtil')
 const {isURL, getUrlFromInput, toPDFJSLocation, getDefaultFaviconUrl, isHttpOrHttps, getLocationIfPDF} = require('../../js/lib/urlutil')
@@ -697,22 +696,6 @@ const api = {
         cb && cb(tab)
       })
     })
-  },
-
-  executeScriptInBackground: (script, cb) => {
-    const win = new BrowserWindow({
-      show: false,
-      webPreferences: {
-        partition: 'default'
-      }
-    })
-    win.webContents.on('did-finish-load', (e) => {
-      win.webContents.executeScriptInTab(config.braveExtensionId, script, {}, (err, url, result) => {
-        cb(err, url, result)
-        setImmediate(() => win.close())
-      })
-    })
-    win.loadURL('about:blank')
   },
 
   moveTo: (state, tabId, frameOpts, browserOpts, windowId) => {

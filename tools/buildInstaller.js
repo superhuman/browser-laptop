@@ -15,7 +15,41 @@ if (isWindows) {
     arch = 'ia32'
   }
 }
-const buildDir = 'Brave-' + process.platform + '-' + arch
+
+const channel = process.env.CHANNEL
+
+var channels = { nightly: true, developer: true, beta: true, dev: true }
+if (!channels[channel]) {
+  throw new Error('CHANNEL environment variable must be set to developer, beta or dev')
+}
+
+var appName
+switch (channel) {
+  case 'nightly':
+    appName = 'Brave-Nightly'
+    break
+  case 'developer':
+    appName = 'Brave-Developer'
+    break
+  case 'beta':
+    appName = 'Brave-Beta'
+    break
+  case 'dev':
+    appName = 'Brave'
+    break
+  default:
+    throw new Error('CHANNEL environment variable must be set to developer, beta or dev')
+}
+
+if (isLinux) {
+  appName = appName.toLowerCase()
+}
+
+if (isWindows) {
+  appName = appName.replace(/-/, '')
+}
+
+const buildDir = appName + '-' + process.platform + '-' + arch
 
 console.log('Building install and update for version ' + VersionInfo.braveVersion + ' in ' + buildDir + ' with Electron ' + VersionInfo.electronVersion)
 
@@ -28,23 +62,23 @@ if (isDarwin) {
 
   cmds = [
     // Remove old
-    'rm -f ' + outDir + '/Brave.dmg',
+    'rm -f ' + outDir + `/${appName}.dmg`,
 
     // Sign it
-    'cd ' + buildDir + '/Brave.app/Contents/Frameworks',
+    'cd ' + buildDir + `/${appName}.app/Contents/Frameworks`,
     'codesign --deep --force --strict --verbose --sign $IDENTIFIER *',
     'cd ../../..',
-    'codesign --deep --force --strict --verbose --sign $IDENTIFIER Brave.app/',
+    `codesign --deep --force --strict --verbose --sign $IDENTIFIER ${appName}.app/`,
 
     // Package it into a dmg
     'cd ..',
     'build ' +
-      '--prepackaged="' + buildDir + '/Brave.app" ' +
+      '--prepackaged="' + buildDir + `/${appName}.app" ` +
       '--mac=dmg ' +
-      ' --config=res/builderConfig.json ',
+      ` --config=res/${channel}/builderConfig.json `,
 
     // Create an update zip
-    'ditto -c -k --sequesterRsrc --keepParent ' + buildDir + '/Brave.app dist/Brave-' + VersionInfo.braveVersion + '.zip'
+    'ditto -c -k --sequesterRsrc --keepParent ' + buildDir + `/${appName}.app dist/${appName}-` + VersionInfo.braveVersion + '.zip'
   ]
   execute(cmds, {}, console.log.bind(null, 'done'))
 } else if (isWindows) {
@@ -64,39 +98,40 @@ if (isDarwin) {
   var resultPromise = muonInstaller.createWindowsInstaller({
     appDirectory: buildDir,
     outputDirectory: outDir,
-    title: 'Brave',
+    title: appName,
+    name: appName,
     authors: 'Brave Software',
     loadingGif: 'res/brave_splash_installing.gif',
-    setupIcon: 'res/brave_installer.ico',
-    iconUrl: 'https://brave.com/favicon.ico',
+    setupIcon: `res/${channel}/brave_installer.ico`,
+    iconUrl: `https://raw.githubusercontent.com/brave/browser-laptop/coexisted-channels/res/${channel}/app.ico`,
     signWithParams: format('-a -fd sha256 -f "%s" -p "%s" -t http://timestamp.verisign.com/scripts/timstamp.dll', path.resolve(cert), certPassword),
     noMsi: true,
-    exe: 'Brave.exe'
+    exe: `${appName}.exe`,
+    setupExe: `${appName}-Setup-${arch}.exe`
   })
   resultPromise.then(() => {
     cmds = [
-      `mv ${outDir}/Setup.exe ${outDir}/BraveSetup-${arch}.exe`
     ]
     execute(cmds, {}, console.log.bind(null, 'done'))
   }, (e) => console.log(`No dice: ${e.message}`))
 } else if (isLinux) {
-  console.log('Install with sudo dpkg -i dist/brave_' + VersionInfo.braveVersion + '_amd64.deb')
-  console.log('Or install with sudo dnf install dist/brave_' + VersionInfo.braveVersion + '.x86_64.rpm')
+  console.log(`Install with sudo dpkg -i dist/${appName}_` + VersionInfo.braveVersion + '_amd64.deb')
+  console.log(`Or install with sudo dnf install dist/${appName}_` + VersionInfo.braveVersion + '.x86_64.rpm')
   cmds = [
     // .deb file
     'electron-installer-debian' +
-      ' --src Brave-linux-x64/' +
+      ` --src ${appName}-linux-x64/` +
       ' --dest dist/' +
       ' --arch amd64' +
-      ' --config res/linuxPackaging.json',
+      ` --config res/${channel}/linuxPackaging.json`,
     // .rpm file
     'electron-installer-redhat' +
-      ' --src Brave-linux-x64/' +
+      ` --src ${appName}-linux-x64/` +
       ' --dest dist/' +
       ' --arch x86_64' +
-      ' --config res/linuxPackaging.json',
+      ` --config res/${channel}/linuxPackaging.json`,
     // .tar.bz2 file
-    'tar -jcvf dist/Brave.tar.bz2 ./Brave-linux-x64'
+    `tar -jcvf dist/${appName}.tar.bz2 ./${appName}-linux-x64`
   ]
   execute(cmds, {}, (err) => {
     if (err) {

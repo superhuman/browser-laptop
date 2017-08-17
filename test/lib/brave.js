@@ -344,7 +344,7 @@ var exports = {
         .waitForVisible(urlInput)
     })
 
-    this.app.client.addCommand('waitForUrl', function (url) {
+    this.app.client.addCommand('waitForUrl', function (url, timeout = 5000, interval = 100) {
       logVerbose('waitForUrl("' + url + '")')
       return this.waitUntil(function () {
         return this.tabByUrl(url).then((response) => {
@@ -354,7 +354,7 @@ var exports = {
           logVerbose('tabByUrl("' + url + '") => false')
           return false
         })
-      }, 5000, null, 100)
+      }, timeout, null, interval)
     })
 
     this.app.client.addCommand('waitForSelectedText', function (text) {
@@ -628,7 +628,7 @@ var exports = {
       }).then((response) => response.value)
     })
 
-    this.app.client.addCommand('newTab', function (createProperties = {}) {
+    this.app.client.addCommand('newTab', function (createProperties = {}, activateIfOpen = false, isRestore = false) {
       return this
         .execute(function (createProperties) {
           return devTools('appActions').createTabRequested(createProperties)
@@ -1084,7 +1084,7 @@ var exports = {
         ? 'node_modules/electron-prebuilt/dist/brave.exe'
         : './node_modules/.bin/electron',
       env,
-      args: ['./', '--enable-logging', '--v=1'],
+      args: ['./', '--enable-logging', '--v=1', '--inspect=9222'],
       requireName: 'devTools'
     })
     return this.app.start()

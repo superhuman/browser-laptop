@@ -9,30 +9,43 @@ describe('Performance startup', function () {
   Brave.beforeAllServerSetup(this)
 
   function * setup () {
-    yield Brave.startApp()
+    console.log('setup')
     Brave.addCommands()
+  }
+
+  function * setupBrave () {
+    console.log('setupBrave')
+    yield Brave.startApp()
+    yield setup(Brave.app.client)
     yield Brave.app.client
-      .waitForUrl(Brave.newTabUrl)
       .waitForBrowserWindow()
   }
 
   function * restart (timeout = 1000) {
+    console.log('restart')
     // XXX Wait for Brave to fully shutdown and free up inspect port 9222
     yield Brave.stopApp(false, timeout)
-    yield Brave.startApp()
-    Brave.addCommands()
+    yield setupBrave()
   }
 
   beforeEach(function * () {
+    console.log('beforeEach')
     this.url = Brave.server.url('page1.html')
-    yield setup()
+    yield setupBrave()
   })
 
   afterEach(function * () {
+    console.log('afterEach')
     yield Brave.stopApp()
   })
 
+  this.afterAll(function * () {
+    console.log('afterAll')
+    yield profilerUtil.uploadTravisArtifacts()
+  })
+
   function * runStory () {
+    console.log('runStory')
     yield Brave.app.client
       .waitForUrl(Brave.newTabUrl, 10000, 250)
       .waitForBrowserWindow()
@@ -51,6 +64,7 @@ describe('Performance startup', function () {
   }
 
   it('fresh', function * () {
+    console.log('starting fresh')
     yield restart()
     yield profilerUtil.startProfiler(this)
     yield runStory.call(this)
@@ -58,6 +72,7 @@ describe('Performance startup', function () {
   })
 
   it('2000 bookmarks', function * () {
+    console.log('starting 2000 bookmarks')
     yield userProfiles.addBookmarks2000(Brave.app.client)
     yield restart()
     yield profilerUtil.startProfiler(this)
@@ -66,6 +81,7 @@ describe('Performance startup', function () {
   })
 
   it('100 tabs', function * () {
+    console.log('starting 100 tabs')
     yield userProfiles.addTabs100(Brave.app.client)
     yield restart(5000)
     yield profilerUtil.startProfiler(this)

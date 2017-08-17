@@ -9,6 +9,35 @@ const fs = require('fs')
 
 const LOG_FOLDER = './cpu-profiles'
 
+// Private
+// ===
+/**
+ * Wrap child_process.exec() so it returns a Promise.
+ */
+const execPromise = function () {
+  const exec = require('child_process').exec
+  const child = exec.apply(this, arguments)
+  return new Promise((resolve, reject) => {
+    child.stdout.on('data', (data) => {
+      console.log('stdout: ' + data)
+    })
+    child.stderr.on('data', (data) => {
+      console.log('stderr: ' + data)
+    })
+    child.on('close', (code) => {
+      if (code !== 0) {
+        console.log(`exited with code ${code}`)
+        reject(code)
+      } else {
+        resolve(code)
+      }
+    })
+  })
+}
+
+// Public
+// ===
+
 /**
  * Connect to a remote instance using Chrome Debugging Protocol and enable
  * the Profiler. Afterwards you need to profiler.start
@@ -48,8 +77,15 @@ const stopProfiler = function * (context, tag = '') {
   return filename
 }
 
+const uploadTravisArtifacts = function * () {
+  if (!process.env.TRAVIS) { return }
+  console.log('Uploading Travis artifacts...')
+  yield execPromise(`artifacts upload ${LOG_FOLDER}`)
+}
+
 module.exports = {
   initProfiler,
   startProfiler,
-  stopProfiler
+  stopProfiler,
+  uploadTravisArtifacts
 }

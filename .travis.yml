@@ -1,6 +1,6 @@
 language: node_js
 node_js:
-  - "7"
+  - "8"
 dist: trusty
 sudo: required
 group: edge
@@ -29,7 +29,7 @@ env:
   - CXX=g++-4.8 NODE_ENV=test TEST_DIR=contents
   - CXX=g++-4.8 NODE_ENV=test TEST_DIR=misc-components
   - CXX=g++-4.8 NODE_ENV=test TEST_DIR=navbar-components
-  - CXX=g++-4.8 NODE_ENV=test TEST_DIR=performance
+  - CXX=g++-4.8 NODE_ENV=test TEST_DIR=performance BRAVE_TEST_ALL_LOGS=1 ARTIFACTS_DEBUG=1 ARTIFACTS_REGION=us-west-2
   - CXX=g++-4.8 NODE_ENV=test TEST_DIR=tab-components
 addons:
   apt:
@@ -38,3 +38,4 @@ addons:
     packages:
       - xvfb
       - g++-4.8
+  artifacts: true

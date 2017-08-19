@@ -46,7 +46,7 @@ module.exports.hasBreakpoint = (breakpoint, arr) => {
 module.exports.hasTabAsRelatedTarget = (event) => {
   const relatedTarget = event.relatedTarget
   const hasDataset = relatedTarget.parentNode && relatedTarget.parentNode.dataset
-  const tabAsRelatedTarget = hasDataset.tab || hasDataset.tabArea
+  const tabAsRelatedTarget = hasDataset && (hasDataset.tab || hasDataset.tabArea)
 
-  return hasDataset && tabAsRelatedTarget
+  return tabAsRelatedTarget
 }

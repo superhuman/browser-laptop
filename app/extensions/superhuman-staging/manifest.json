@@ -1,0 +1,87 @@
+{
+"update_url": "https://clients2.google.com/service/update2/crx",
+
+  "manifest_version": 2,
+  "name": "Superhuman (staging)",
+  "short_name": "Superhuman",
+  "description": "Blazingly fast, visually gorgeous email.",
+  "version": "2.0.36",
+  "homepage_url": "https://superhuman.com",
+  "icons": {
+    "16": "icons/32x32.png",
+    "32": "icons/32x32.png",
+    "19": "icons/38x38.png",
+    "38": "icons/38x38.png",
+    "48": "icons/96x96.png",
+    "96": "icons/96x96.png",
+    "128": "icons/256x256.png"
+  },
+  "permissions": [
+    "activeTab",
+    "alarms",
+    "background",
+    "contextMenus",
+    "cookies",
+    "gcm",
+    "identity",
+    "idle",
+    "notifications",
+    "sessions",
+    "storage",
+    "system.cpu",
+    "system.display",
+    "system.memory",
+    "system.storage",
+    "tabs",
+    "topSites",
+    "unlimitedStorage",
+    "webRequest",
+    "webRequestBlocking",
+    "<all_urls>"
+  ],
+  "background": {
+    "page": "background/background.html"
+  },
+  "browser_action": {
+    "default_title": "Superhuman (staging)"
+  },
+  "content_scripts": [
+    {
+        "matches": ["https://staging.superhuman.com/~extension/oauth2redirect"],
+        "js": ["pages/oauth2redirect.js"],
+        "run_at": "document_start",
+        "all_frames": true
+    },
+    {
+        "matches": ["https://staging.superhuman.com/**"],
+        "js": ["pages/index.js"],
+        "run_at": "document_start",
+        "all_frames": true
+    },
+    {
+      "matches": [
+        "https://mail.google.com/*",
+        "https://inbox.google.com/*"
+      ],
+      "js": ["gmail/loader.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://superhuman.com/"],
+      "js": ["pages/index.js"],
+      "run_at": "document_start"
+    }
+  ],
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAhQf8zU2OoXxiuxP+KMus57uFi9wmGUc/wdKIJh6PTyWeNF3DU9lDJpgxwvNdXWxuq3/uR/sS0QXtpzTS6ejctvc8qeZB2VwiI9f4c+VvNeg6FEs2ERZCMlBNB1GMvEEppJnygq2CdV4wOYnWpJUQmTEcwtpTTWSRMqwsrSxOb0zb5HHHq/Asy03c4QEgG2ymjL6G63zjgc1pLwkTQYsvWbB7dwa1DHNpgSeaNDM+HAL8MkyI6kyP4AfWEHBV+SBzdIexdEDMDooNy/JN4nnETrKRkyz5BX5WvYATsowqZUWcxKrN8q6LCgXCnrJfK8c5hmi8lJoGZ0Acz0cRqGzliQIDAQAB",
+  "content_security_policy":
+    "script-src 'self' blob: https://*.firebaseio.com/ https://apis.google.com/ https://www.google.com/ https://platform.twitter.com https://syndication.twitter.com https://cdn.syndication.twimg.com https://staging.superhuman.com; object-src 'self'",
+  "externally_connectable": {
+    "matches": ["https://staging.superhuman.com/*"]
+  },
+  "web_accessible_resources": [
+    "128.png",
+    "frame.html",
+    "superhuman.html"
+  ],
+  "minimum_chrome_version": "48"
+}

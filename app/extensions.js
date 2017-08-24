@@ -466,6 +466,9 @@ module.exports.init = () => {
   extensionInfo.setState(config.syncExtensionId, extensionStates.REGISTERED)
   loadExtension(config.syncExtensionId, getExtensionsPath('brave'), generateSyncManifest(), 'unpacked')
 
+  extensionInfo.setState('superhuman-staging', extensionStates.REGISTERED)
+  loadExtension('superhuman-staging', getExtensionsPath('superhuman-staging'))
+
   if (getSetting(settings.TORRENT_VIEWER_ENABLED)) {
     extensionInfo.setState(config.torrentExtensionId, extensionStates.REGISTERED)
     loadExtension(config.torrentExtensionId, getExtensionsPath('torrent'), generateTorrentManifest(), 'component')
